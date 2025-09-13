@@ -9,7 +9,7 @@ public class DialogManager : MonoBehaviour
     public class DialogueChoice
     {
         public string choiceText;
-        public int jumpId; // event to jump to when selected
+        public int jumpId;
     }
 
     [System.Serializable]
@@ -24,7 +24,7 @@ public class DialogManager : MonoBehaviour
         public GameObject activeChar;
         public float delay = 0.5f;
         public int jumpId = -1;
-        public DialogueChoice[] choices; // choices for this event
+        public DialogueChoice[] choices;
     }
 
     [Header("UI Elements")]
@@ -41,7 +41,7 @@ public class DialogManager : MonoBehaviour
     public DialogueEvent[] events;
 
     [Header("Settings")]
-    public float scrollSpeed = 0.05f; // adjustable typing speed
+    public float scrollSpeed = 0.05f;
 
     private int currentEventIndex = 0;
     private bool isTyping = false;
@@ -195,7 +195,6 @@ public class DialogManager : MonoBehaviour
     {
         DialogueEvent currentEvent = events[currentEventIndex];
 
-        // Stop typing and show full text
         if (isTyping && typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
@@ -204,19 +203,16 @@ public class DialogManager : MonoBehaviour
             hasFinishedTyping = true;
         }
 
-        // Handle next step after typing
         if (hasFinishedTyping)
         {
-            hasFinishedTyping = false; // prevent double-trigger
+            hasFinishedTyping = false;
 
-            // If there are choices, show them
             if (currentEvent.choices != null && currentEvent.choices.Length > 0)
             {
                 ShowChoices(currentEvent.choices);
             }
             else
             {
-                // No choices: show next button and advance to next event
                 nextButton.SetActive(true);
                 JumpToNextEvent(currentEvent);
             }
