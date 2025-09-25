@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
@@ -27,11 +28,24 @@ public class MainMenu : MonoBehaviour
         playing = staticfx.isPlaying;
     }
 
+    public void NewGame()
+    {
+        StartCoroutine(newstat());
+    }
+
     IEnumerator staticc()
     {
         staticAsset.SetActive(true);
         staticfx.Play();
         yield return new WaitUntil(() => !staticfx.isPlaying);
         staticAsset.SetActive(false);
+    }
+
+    IEnumerator newstat()
+    {
+        staticAsset.SetActive(true);
+        staticfx.Play();
+        yield return new WaitUntil(() => !staticfx.isPlaying);
+        SceneManager.LoadScene(1);
     }
 }
