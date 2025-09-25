@@ -44,10 +44,12 @@ public class DialogManager : MonoBehaviour
     private bool isTyping = false;
     private Coroutine typingCoroutine = null;
     private bool hasFinishedTyping = false;
+    public bool running = false;
 
     private bool awaitingPlayerInput = false; 
     private int lastShownIndex = -1; 
-    private bool endOnNext = false;        
+    private bool endOnNext = false; 
+    
     void Start()
     {
         if (events == null || events.Length == 0)
@@ -55,8 +57,6 @@ public class DialogManager : MonoBehaviour
             Debug.LogWarning("[DialogManager] No events assigned.");
             return;
         }
-
-        StartDialogueAt(0);
     }
 
     void Update()
@@ -115,7 +115,7 @@ public class DialogManager : MonoBehaviour
 
     private IEnumerator RunDialogueEvent(DialogueEvent ev)
     {
-        // reset UI state for this event
+        running = true;
         if (nextButton != null) nextButton.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         endOnNext = false;
@@ -315,5 +315,6 @@ public class DialogManager : MonoBehaviour
         awaitingPlayerInput = false;
         lastShownIndex = -1;
         endOnNext = false;
+        running = false;
     }
 }

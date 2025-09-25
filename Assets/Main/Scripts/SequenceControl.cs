@@ -13,12 +13,14 @@ public class GameEvent
 {
     public string eventName;
     public GameEventType eventType;
-    [TextArea(2, 5)]
-    public string description;
+    public int dialogueStartIndex = 0;
 }
 
 public class SequenceControl : MonoBehaviour
 {
+    [Header("Controls")]
+    public DialogManager dialog;
+
     [Header("Event Sequence")]
     public List<GameEvent> events = new List<GameEvent>();
 
@@ -61,6 +63,7 @@ public class SequenceControl : MonoBehaviour
     private void StartDialogue(GameEvent gameEvent)
     {
         Debug.Log("Dialogue started: " + gameEvent.eventName);
+        dialog.StartDialogueAt(gameEvent.dialogueStartIndex);
         NextEvent();
     }
 

@@ -9,22 +9,35 @@ public class UIControl : MonoBehaviour
     public GameObject investigate;
     public GameObject files;
     public GameObject options;
+    public GameObject crosshair;
+    public GameObject dialog;
 
     [Header("Script Control")]
-    public MonoBehaviour scriptDisable;
+    public MonoBehaviour dragControls;
+
+    void Update()
+    {
+        UpdateState();
+    }
+
+    void UpdateState()
+    {
+        bool disableDrag = dialog.activeSelf || files.activeSelf || options.activeSelf;
+
+        dragControls.enabled = !disableDrag;
+        crosshair.SetActive(!disableDrag);
+    }
 
     public void OptionsClick()
     {
         options.SetActive(!options.activeSelf);
-        if (scriptDisable != null)
-            scriptDisable.enabled = !(files.activeSelf || options.activeSelf);
     }
 
     public void FileClick()
     {
         files.SetActive(!files.activeSelf);
-        if (scriptDisable != null)
-            scriptDisable.enabled = !(files.activeSelf || options.activeSelf);
+
+        Debug.Log(!(files.activeSelf || options.activeSelf));
 
         GameObject clicked = EventSystem.current.currentSelectedGameObject;
         if (clicked != null)
