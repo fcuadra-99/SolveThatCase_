@@ -2,6 +2,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using UnityEditor.Rendering;
 
 public class DialogManager : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class DialogManager : MonoBehaviour
         [TextArea(3, 5)] public string dialogueText;
         public AudioSource voiceLine;
         public GameObject activeChar;
-        public float delay = 0.5f;
+        public float delay = 0f;
         public int jumpIndex = -1;
         public DialogueChoice[] choices;
     }
@@ -304,6 +305,8 @@ public class DialogManager : MonoBehaviour
         DisplayNextDialogue();
     }
 
+    public event System.Action onDiagEnd;
+
     // --- End ---
     private void EndDialogue()
     {
@@ -311,10 +314,14 @@ public class DialogManager : MonoBehaviour
         if (diagBox != null) diagBox.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         if (nextButton != null) nextButton.SetActive(false);
+        if (diagText != null) diagText.text = "";
+        if (diagChar != null) diagChar.text = "";
 
         awaitingPlayerInput = false;
         lastShownIndex = -1;
         endOnNext = false;
         running = false;
+
+        onDiagEnd?.Invoke();
     }
 }

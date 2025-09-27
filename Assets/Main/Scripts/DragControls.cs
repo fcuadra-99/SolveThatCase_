@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -16,6 +17,14 @@ public class Controls : MonoBehaviour
 
     [Header("Systems")]
     public FileCollection itemCollector;
+
+    [Header("Zoom Settings")]
+    public float focusZoomSpeed = 1f;
+    public float resetZoomSpeed = 1f;
+    public float zoomFactor = 0.5f;
+
+    private Vector3 originalCamPos;
+    private float originalCamSize;
 
     [Header("Settings")]
     public float doubleClickTime = 0.3f;
@@ -234,6 +243,74 @@ public class Controls : MonoBehaviour
 
         bg.position = pos;
     }
+
+    public void FocusOnItem(Vector3 targetPos)
+    {
+        if (cam == null) return;
+
+        originalCamPos = cam.transform.position;
+        originalCamSize = cam.orthographicSize;
+
+        StopAllCoroutines();
+        StartCoroutine(SmoothFocus(targetPos));
+    }
+
+    public void ResetFocus()
+    {
+        if (cam == null) return;
+
+        StopAllCoroutines();
+        StartCoroutine(SmoothResetFocus());
+    }
+
+    private IEnumerator SmoothFocus(Vector3 targetPos)
+    {
+        float duration = focusZoomSpeed;
+        float elapsed = 0f;
+
+        Vector3 startPos = cam.transform.position;
+        Vector3 endPos = new Vector3(targetPos.x, targetPos.y, startPos.z);
+
+        float startSize = cam.orthographicSize;
+        float targetSize = startSize * zoomFactor;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            cam.transform.position = Vector3.Lerp(startPos, endPos, t);
+            cam.orthographicSize = Mathf.Lerp(startSize, targetSize, t);
+
+            CamClamp();
+            yield return null;
+        }
+    }
+
+    private IEnumerator SmoothResetFocus()
+    {
+        float duration = resetZoomSpeed;
+        float elapsed = 0f;
+
+        Vector3 startPos = cam.transform.position;
+        Vector3 endPos = originalCamPos;
+
+        float startSize = cam.orthographicSize;
+        float targetSize = originalCamSize;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            cam.transform.position = Vector3.Lerp(startPos, endPos, t);
+            cam.orthographicSize = Mathf.Lerp(startSize, targetSize, t);
+
+            CamClamp();
+            yield return null;
+        }
+    }
+
 
     private void MoveCrosshair()
     {
