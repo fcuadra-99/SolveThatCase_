@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static DoorData;
 
 public class Controls : MonoBehaviour
 {
@@ -11,12 +12,12 @@ public class Controls : MonoBehaviour
     [Header("References")]
     public GraphicRaycaster uiRaycaster;
     public EventSystem eventSystem;
-    public Transform bg;
     public Transform ch;
     public Camera cam;
 
     [Header("Systems")]
     public FileCollection itemCollector;
+    public BGControl bgControl;   
 
     [Header("Zoom Settings")]
     public float focusZoomSpeed = 1f;
@@ -168,24 +169,37 @@ public class Controls : MonoBehaviour
 
         if (hit.collider != null)
         {
-            if (hit.collider.CompareTag("Items") || hit.collider.name == "YourObjectName")
+            GameObject clicked = hit.collider.gameObject;
+
+            if (hit.collider.CompareTag("Items"))
             {
-                Debug.Log("Pressed: " + hit.collider.name);
+                Debug.Log("Pressed item: " + clicked.name);
 
                 if (itemCollector != null)
                 {
-                    bool isNew = itemCollector.CollectItem(hit.collider.name);
+                    bool isNew = itemCollector.CollectItem(clicked.name);
 
                     if (!isNew)
                     {
-                        Debug.Log("Popup: Already collected " + hit.collider.name);
+                        Debug.Log("Popup: Already collected " + clicked.name);
                     }
                 }
 
-                hit.collider.gameObject.SendMessage("OnTouchDown", SendMessageOptions.DontRequireReceiver);
+                clicked.SendMessage("OnTouchDown", SendMessageOptions.DontRequireReceiver);
             }
+            else if (hit.collider.CompareTag("Doors"))
+            {
+                Debug.Log("Pressed door: " + clicked.name);
+
+                if (bgControl != null)
+                {
+                    bgControl.OnTouchDown(clicked);
+                }
+            }
+
         }
     }
+
 
     private void CHScale()
     {
@@ -194,7 +208,7 @@ public class Controls : MonoBehaviour
         Vector2 worldPoint = ch.position;
         RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
 
-        if (hit.collider != null && (hit.collider.CompareTag("Items") || hit.collider.name == "YourObjectName"))
+        if (hit.collider != null && ((hit.collider.CompareTag("Items") || hit.collider.name == "YourObjectName") || hit.collider.CompareTag("Doors")))
         {
             ch.localScale = Vector3.Lerp(ch.localScale, chScale, Time.deltaTime * 10f);
         }
@@ -219,9 +233,12 @@ public class Controls : MonoBehaviour
 
     private void CamClamp()
     {
-        if (bg == null || cam == null) return;
+        if (bgControl == null || cam == null) return;
 
-        SpriteRenderer sr = bg.GetComponent<SpriteRenderer>();
+        GameObject activeScene = bgControl.GetActiveScene();
+        if (activeScene == null) return;
+
+        SpriteRenderer sr = activeScene.GetComponentInChildren<SpriteRenderer>();
         if (sr == null) return;
 
         float camHeight = cam.orthographicSize * 2f;
@@ -230,7 +247,7 @@ public class Controls : MonoBehaviour
         float spriteWidth = sr.bounds.size.x;
         float spriteHeight = sr.bounds.size.y;
 
-        Vector3 pos = bg.position;
+        Vector3 pos = activeScene.transform.position;
 
         float minX = cam.transform.position.x - (spriteWidth / 2f - camWidth / 2f);
         float maxX = cam.transform.position.x + (spriteWidth / 2f - camWidth / 2f);
@@ -241,7 +258,7 @@ public class Controls : MonoBehaviour
         pos.x = Mathf.Clamp(pos.x, minX, maxX);
         pos.y = Mathf.Clamp(pos.y, minY, maxY);
 
-        bg.position = pos;
+        activeScene.transform.position = pos;
     }
 
     public void FocusOnItem(Vector3 targetPos)
@@ -314,6 +331,11 @@ public class Controls : MonoBehaviour
 
     private void MoveCrosshair()
     {
+        if (bgControl == null) return;
+
+        GameObject activeScene = bgControl.GetActiveScene();
+        if (activeScene == null) return;
+
         Vector3 vp = cam.WorldToViewportPoint(chTargetPos);
         Vector3 targetMove = Vector3.zero;
 
@@ -341,6 +363,6 @@ public class Controls : MonoBehaviour
 
         crosshairVelocity = Vector3.Lerp(crosshairVelocity, targetMove, Time.deltaTime * 5f);
 
-        bg.Translate(crosshairVelocity * settings.crosshairSpeed * Time.deltaTime, Space.World);
+        activeScene.transform.Translate(crosshairVelocity * settings.crosshairSpeed * Time.deltaTime, Space.World);
     }
 }
