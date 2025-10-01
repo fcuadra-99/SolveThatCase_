@@ -58,8 +58,6 @@ public class ProfileCollection : MonoBehaviour
         }
 
         CharacterData character = characterLookup[characterName];
-
-        // Add to profiles if first time
         if (!metCharacters.Contains(characterName))
         {
             metCharacters.Add(characterName);

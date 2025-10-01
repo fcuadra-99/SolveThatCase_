@@ -41,6 +41,9 @@ public class DialogManager : MonoBehaviour
     [Header("Settings")]
     public float scrollSpeed = 0.05f;
 
+    [Header("Dialogue Log")]
+    public Logzzza dialogueLog;
+
     private int currentEventIndex = 0;
     private bool isTyping = false;
     private Coroutine typingCoroutine = null;
@@ -137,6 +140,9 @@ public class DialogManager : MonoBehaviour
 
         diagBox.SetActive(true);
         diagChar.text = ev.characterName ?? "";
+
+        if (dialogueLog != null)
+            dialogueLog.LogDialogue(ev.characterName, ev.dialogueText);
 
         typingCoroutine = StartCoroutine(TypeDialogue(ev.dialogueText ?? ""));
         yield return typingCoroutine; 

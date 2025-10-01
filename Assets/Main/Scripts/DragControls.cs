@@ -17,6 +17,7 @@ public class Controls : MonoBehaviour
 
     [Header("Systems")]
     public FileCollection itemCollector;
+    public ProfileCollection profileCollector;
     public BGControl bgControl;   
 
     [Header("Zoom Settings")]
@@ -187,14 +188,9 @@ public class Controls : MonoBehaviour
 
                 clicked.SendMessage("OnTouchDown", SendMessageOptions.DontRequireReceiver);
             }
-            else if (hit.collider.CompareTag("Doors"))
+            else if (hit.collider.CompareTag("Characters"))
             {
-                Debug.Log("Pressed door: " + clicked.name);
-
-                if (bgControl != null)
-                {
-                    bgControl.OnTouchDown(clicked);
-                }
+                profileCollector.TalkToCharacter(clicked.name);
             }
 
         }
@@ -208,7 +204,7 @@ public class Controls : MonoBehaviour
         Vector2 worldPoint = ch.position;
         RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
 
-        if (hit.collider != null && ((hit.collider.CompareTag("Items") || hit.collider.name == "YourObjectName") || hit.collider.CompareTag("Doors")))
+        if (hit.collider != null && ((hit.collider.CompareTag("Items") || hit.collider.name == "YourObjectName") || hit.collider.CompareTag("Doors") || hit.collider.CompareTag("Characters")))
         {
             ch.localScale = Vector3.Lerp(ch.localScale, chScale, Time.deltaTime * 10f);
         }

@@ -11,6 +11,7 @@ public class UIControl : MonoBehaviour
     public GameObject options;
     public GameObject crosshair;
     public GameObject dialog;
+    public GameObject logs;
 
     [Header("Script Control")]
     public MonoBehaviour dragControls;
@@ -22,7 +23,7 @@ public class UIControl : MonoBehaviour
 
     void UpdateState()
     {
-        bool disableDrag = dialog.activeSelf || files.activeSelf || options.activeSelf;
+        bool disableDrag = dialog.activeSelf || files.activeSelf || options.activeSelf || logs.activeSelf;
 
         dragControls.enabled = !disableDrag;
         crosshair.SetActive(!disableDrag);
@@ -46,5 +47,10 @@ public class UIControl : MonoBehaviour
             if (label != null)
                 label.text = files.activeSelf ? "Close" : "Files";
         }
+    }
+
+    public void LogClick()
+    {
+        logs.SetActive(!logs.activeSelf);
     }
 }
