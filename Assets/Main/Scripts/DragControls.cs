@@ -188,6 +188,10 @@ public class Controls : MonoBehaviour
 
                 clicked.SendMessage("OnTouchDown", SendMessageOptions.DontRequireReceiver);
             }
+            else if (hit.collider.CompareTag("Doors"))
+            {
+                bgControl.OnTouchDown(clicked);
+            }
             else if (hit.collider.CompareTag("Characters"))
             {
                 profileCollector.TalkToCharacter(clicked.name);

@@ -27,11 +27,9 @@ public class BGControl : MonoBehaviour
 
     void Start()
     {
-        // Deactivate all scenes
         foreach (var s in scenes)
             if (s != null) s.SetActive(false);
 
-        // Activate starting scene
         if (scenes.Count > 0 && startingSceneIndex >= 0 && startingSceneIndex < scenes.Count)
         {
             ActivateScene(startingSceneIndex);

@@ -33,7 +33,8 @@ public class FileCollection : MonoBehaviour
 
     [Header("Systems")]
     public Controls controls;          
-    public DialogManager dialogManager; 
+    public DialogManager dialogManager;
+    public CrossControl crossExamManager;
 
     private Dictionary<string, ItemData> itemLookup = new Dictionary<string, ItemData>();
 
@@ -124,6 +125,21 @@ public class FileCollection : MonoBehaviour
         dialogManager.StartDialogueAt(0);
 
         dialogManager.onDiagEnd += HandleDiagEnd;
+    }
+
+    public void PresentSelectedItem()
+    {
+        if (nameText == null) return;
+        string selectedItem = nameText.text;
+
+        if (crossExamManager != null)
+        {
+            crossExamManager.PresentEvidence(selectedItem);
+        }
+        else
+        {
+            Debug.LogWarning("[FileCollection] No CrossExaminationManager assigned.");
+        }
     }
 
 

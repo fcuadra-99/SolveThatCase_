@@ -35,6 +35,7 @@ public class ProfileCollection : MonoBehaviour
     [Header("Systems")]
     public Controls controls;
     public DialogManager dialogManager;
+    public CrossControl crossExamManager;
 
     private Dictionary<string, CharacterData> characterLookup = new Dictionary<string, CharacterData>();
 
@@ -79,6 +80,21 @@ public class ProfileCollection : MonoBehaviour
         if (controls != null && character.worldLocation != null)
         {
             controls.FocusOnItem(character.worldLocation.position);
+        }
+    }
+
+    public void PresentSelectedProfile()
+    {
+        if (nameText == null) return;
+        string selectedProfile = nameText.text;
+
+        if (crossExamManager != null)
+        {
+            crossExamManager.PresentEvidence(selectedProfile);
+        }
+        else
+        {
+            Debug.LogWarning("[ProfileCollection] No CrossExaminationManager assigned.");
         }
     }
 

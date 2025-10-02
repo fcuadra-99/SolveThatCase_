@@ -2,15 +2,18 @@
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
-using UnityEditor.Rendering;
 
 public class DialogManager : MonoBehaviour
 {
+    [Header("Meter Integration")]
+    public MonoBehaviour meterController;
+
     [System.Serializable]
     public class DialogueChoice
     {
         public string choiceText;
         public int jumpIndex = -1;
+        public float meterAdjustment = 0f;
     }
 
     [System.Serializable]
@@ -19,6 +22,9 @@ public class DialogManager : MonoBehaviour
         public string characterName;
         [TextArea(3, 5)] public string dialogueText;
         public AudioSource voiceLine;
+
+        public AudioClip typingSFX;
+
         public GameObject activeChar;
         public float delay = 0f;
         public int jumpIndex = -1;
@@ -35,14 +41,19 @@ public class DialogManager : MonoBehaviour
     public GameObject choicePanel;
     public GameObject choiceButtonPrefab;
 
+    [Header("Audio Setup")]
+    public AudioSource typingAudioSource;
+    public AudioClip defaultTypingSFX;
+
     [Header("Event Data")]
     public DialogueEvent[] events;
 
     [Header("Settings")]
     public float scrollSpeed = 0.05f;
 
-    [Header("Dialogue Log")]
+    [Header("Scripts")]
     public Logzzza dialogueLog;
+    public SpotlightControl spotlightControl;
 
     private int currentEventIndex = 0;
     private bool isTyping = false;
@@ -50,10 +61,10 @@ public class DialogManager : MonoBehaviour
     private bool hasFinishedTyping = false;
     public bool running = false;
 
-    private bool awaitingPlayerInput = false; 
-    private int lastShownIndex = -1; 
-    private bool endOnNext = false; 
-    
+    private bool awaitingPlayerInput = false;
+    private int lastShownIndex = -1;
+    private bool endOnNext = false;
+
     void Start()
     {
         if (events == null || events.Length == 0)
@@ -72,7 +83,6 @@ public class DialogManager : MonoBehaviour
         }
     }
 
-    // --- Public API ---
     public void StartDialogueAt(int startIndex)
     {
         endOnNext = false;
@@ -119,6 +129,7 @@ public class DialogManager : MonoBehaviour
 
     private IEnumerator RunDialogueEvent(DialogueEvent ev)
     {
+        spotlightControl.MoveUp();
         running = true;
         if (nextButton != null) nextButton.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
@@ -138,6 +149,18 @@ public class DialogManager : MonoBehaviour
 
         if (ev.voiceLine != null) ev.voiceLine.Play();
 
+        if (typingAudioSource != null)
+        {
+            if (ev.typingSFX != null)
+            {
+                typingAudioSource.clip = ev.typingSFX;
+            }
+            else
+            {
+                typingAudioSource.clip = defaultTypingSFX;
+            }
+        }
+
         diagBox.SetActive(true);
         diagChar.text = ev.characterName ?? "";
 
@@ -145,7 +168,7 @@ public class DialogManager : MonoBehaviour
             dialogueLog.LogDialogue(ev.characterName, ev.dialogueText);
 
         typingCoroutine = StartCoroutine(TypeDialogue(ev.dialogueText ?? ""));
-        yield return typingCoroutine; 
+        yield return typingCoroutine;
 
         hasFinishedTyping = true;
         awaitingPlayerInput = true;
@@ -167,7 +190,6 @@ public class DialogManager : MonoBehaviour
         if (nextButton != null) nextButton.SetActive(true);
     }
 
-    // --- Typing ---
     private IEnumerator TypeDialogue(string text)
     {
         isTyping = true;
@@ -183,6 +205,12 @@ public class DialogManager : MonoBehaviour
             foreach (char c in text)
             {
                 diagText.text += c;
+
+                if (typingAudioSource != null && typingAudioSource.clip != null)
+                {
+                    typingAudioSource.Play();
+                }
+
                 yield return new WaitForSeconds(scrollSpeed);
             }
         }
@@ -218,7 +246,6 @@ public class DialogManager : MonoBehaviour
         }
     }
 
-    // --- Choices ---
     private void ShowChoices(DialogueChoice[] choices)
     {
         awaitingPlayerInput = true;
@@ -235,18 +262,26 @@ public class DialogManager : MonoBehaviour
             if (t != null) t.text = choice.choiceText;
 
             int target = choice.jumpIndex;
+            float adjustment = choice.meterAdjustment;
+
             Button btn = newBtn.GetComponent<Button>();
             if (btn != null)
-                btn.onClick.AddListener(() => OnChoiceSelected(target));
+                btn.onClick.AddListener(() => OnChoiceSelected(target, adjustment));
             else
                 Debug.LogWarning("[DialogManager] choiceButtonPrefab needs a Button component.");
         }
     }
 
-    private void OnChoiceSelected(int jumpIndex)
+    private void OnChoiceSelected(int jumpIndex, float meterAdjustment)
     {
         if (choicePanel != null) choicePanel.SetActive(false);
         awaitingPlayerInput = false;
+
+        if (meterController != null)
+        {
+            meterController.SendMessage("AdjustMeter", meterAdjustment, SendMessageOptions.DontRequireReceiver);
+            Debug.Log($"Meter adjusted by: {meterAdjustment}");
+        }
 
         if (jumpIndex == -2)
         {
@@ -269,7 +304,6 @@ public class DialogManager : MonoBehaviour
         DisplayNextDialogue();
     }
 
-    // --- Next button handler (wire this method on the Next button OnClick) ---
     public void OnNextPressed()
     {
         if (isTyping)
@@ -313,7 +347,6 @@ public class DialogManager : MonoBehaviour
 
     public event System.Action onDiagEnd;
 
-    // --- End ---
     private void EndDialogue()
     {
         Debug.Log("[DialogManager] Dialogue ended.");
@@ -327,6 +360,8 @@ public class DialogManager : MonoBehaviour
         lastShownIndex = -1;
         endOnNext = false;
         running = false;
+
+        spotlightControl.MoveDoen();
 
         onDiagEnd?.Invoke();
     }
