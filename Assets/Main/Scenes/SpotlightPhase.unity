@@ -531,11 +531,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 623181074}
   - {fileID: 1645111903}
   - {fileID: 845206520}
   - {fileID: 250132986}
   - {fileID: 49642251}
-  - {fileID: 623181074}
   - {fileID: 1849933476}
   - {fileID: 1654023836}
   - {fileID: 1846805629}
@@ -958,22 +958,82 @@ MonoBehaviour:
   typingAudioSource: {fileID: 1446703020}
   defaultTypingSFX: {fileID: 8300000, guid: b31c2664721883349afef1befb712376, type: 3}
   events:
-  - characterName: kanskdna
-    dialogueText: kajnsdasdn
+  - characterName: MC
+    dialogueText: 'Welcome, there are 3 phases to this game being the Introduction,
+      Investigation and Spotlight Phases. '
     voiceLine: {fileID: 0}
     typingSFX: {fileID: 0}
     activeChar: {fileID: 916782266}
     delay: 1
     jumpIndex: -1
+    choices: []
+  - characterName: MC
+    dialogueText: In the introduction phase, the case is presented to you and the
+      goal to be achieved by the player.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 916782266}
+    delay: 0
+    jumpIndex: -1
+    choices: []
+  - characterName: MC
+    dialogueText: The next phase is investigation. During this phase, the players
+      must look aorund the crime scene, ask bystanders about the case, and collect
+      evidence for the upcoming spotlight phase.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 0}
+    delay: 2
+    jumpIndex: -2
+    choices: []
+  - characterName: MC
+    dialogueText: After collecting all the evidence required for the player, the
+      spotlight phase then commence. During this phase, the player performs and shows
+      the evidence whie balancing the logic meter.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 916782266}
+    delay: 0
+    jumpIndex: -1
+    choices: []
+  - characterName: MC
+    dialogueText: The logic meter is active throughout a case but is affected much
+      more during the spotlight phase of the game. The investigation phase might
+      have puzzles depending on the case, but mainly it will have a rebuttal section
+      where the player must look for contradictions from someone's statement using
+      evidence collected during the investigation.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 916782266}
+    delay: 0
+    jumpIndex: -1
+    choices: []
+  - characterName: MC
+    dialogueText: Watch out, some dialogues might contain choices that affect the
+      logic meter.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 916782266}
+    delay: 0
+    jumpIndex: -1
     choices:
-    - choiceText: asdasd
+    - choiceText: I see.
       jumpIndex: -1
-      meterAdjustment: 30
-    - choiceText: asdads
+      meterAdjustment: 20
+    - choiceText: What was that?
       jumpIndex: -1
       meterAdjustment: -20
-  - characterName: kanskdna
-    dialogueText: ofdijgdofjg
+  - characterName: MC
+    dialogueText: Ok now try out investigating then a sample rebuttal.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 0}
+    delay: 0
+    jumpIndex: -2
+    choices: []
+  - characterName: MC
+    dialogueText: Thats all for the game, remember to keep your meter in check or
+      youll lose.
     voiceLine: {fileID: 0}
     typingSFX: {fileID: 0}
     activeChar: {fileID: 0}
@@ -1792,7 +1852,7 @@ MonoBehaviour:
     rid: 4492875128289624159
   m_ShadowCastingSource: 2
   m_ShadowMesh:
-    m_Mesh: {fileID: 1541083672}
+    m_Mesh: {fileID: 658945898}
     m_LocalBounds:
       m_Center: {x: 0, y: 0, z: 0}
       m_Extent: {x: 0.16998291, y: 0.13998413, z: 0}
@@ -2847,26 +2907,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf924aec209e4d945b0d16988949088e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialog: {fileID: 250132985}
-  events:
-  - eventName: Intro
-    eventType: 1
+  dialogManager: {fileID: 250132985}
+  fileCollection: {fileID: 1846805628}
+  trialManager: {fileID: 1645111904}
+  musicSource: {fileID: 1603962106}
+  phases:
+  - phaseName: Intro
+    phaseType: 0
     dialogueStartIndex: 0
-  - eventName: More Dialogue
-    eventType: 1
+    crossExamManager: {fileID: 0}
+    backgroundMusic: {fileID: 8300000, guid: 1277876f2c370614a986a993ece94c4f, type: 3}
+  - phaseName: Invest
+    phaseType: 1
     dialogueStartIndex: 0
-  - eventName: Investigation p1
-    eventType: 0
+    crossExamManager: {fileID: 0}
+    backgroundMusic: {fileID: 8300000, guid: 1277876f2c370614a986a993ece94c4f, type: 3}
+  - phaseName: Break
+    phaseType: 2
     dialogueStartIndex: 0
-  - eventName: break
-    eventType: 1
+    crossExamManager: {fileID: 0}
+    backgroundMusic: {fileID: 8300000, guid: 1277876f2c370614a986a993ece94c4f, type: 3}
+  - phaseName: Trial
+    phaseType: 3
     dialogueStartIndex: 0
-  - eventName: Investigation p2
-    eventType: 0
-    dialogueStartIndex: 0
-  - eventName: trials
-    eventType: 2
-    dialogueStartIndex: 0
+    crossExamManager: {fileID: 0}
+    backgroundMusic: {fileID: 8300000, guid: 1277876f2c370614a986a993ece94c4f, type: 3}
+  - phaseName: don
+    phaseType: 0
+    dialogueStartIndex: 7
+    crossExamManager: {fileID: 0}
+    backgroundMusic: {fileID: 8300000, guid: 1277876f2c370614a986a993ece94c4f, type: 3}
 --- !u!1 &633025384
 GameObject:
   m_ObjectHideFlags: 0
@@ -3382,6 +3452,171 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 653169037}
   m_CullTransparentMesh: 1
+--- !u!43 &658945898
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 11
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 0
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_MeshUsageFlags: 0
+  m_CookingOptions: 30
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &661435183
 GameObject:
   m_ObjectHideFlags: 0
@@ -4161,7 +4396,7 @@ MonoBehaviour:
   logicValueLerpSpeed: 10
   pulseDuration: 0.2
   meterRectTransform: {fileID: 1653759709}
-  screenHeightOffsetRatio: 2
+  screenHeightOffsetRatio: 0
   meterMovementSpeed: 5
   maxLogicPoints: 100
   fluctuationSpeed: 3
@@ -6320,12 +6555,12 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1362569787}
-  - {fileID: 1653759709}
   - {fileID: 1737228670}
   - {fileID: 1814743897}
   - {fileID: 352654508}
   - {fileID: 168816911}
   - {fileID: 1177810883}
+  - {fileID: 1653759709}
   - {fileID: 1155710981}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -6848,171 +7083,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1931316079}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!43 &1541083672
-Mesh:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 11
-  m_SubMeshes:
-  - serializedVersion: 2
-    firstByte: 0
-    indexCount: 0
-    topology: 0
-    baseVertex: 0
-    firstVertex: 0
-    vertexCount: 0
-    localAABB:
-      m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 0, y: 0, z: 0}
-  m_Shapes:
-    vertices: []
-    shapes: []
-    channels: []
-    fullWeights: []
-  m_BindPose: []
-  m_BoneNameHashes: 
-  m_RootBoneNameHash: 0
-  m_BonesAABB: []
-  m_VariableBoneCountWeights:
-    m_Data: 
-  m_MeshCompression: 0
-  m_IsReadable: 1
-  m_KeepVertices: 1
-  m_KeepIndices: 1
-  m_IndexFormat: 0
-  m_IndexBuffer: 
-  m_VertexData:
-    serializedVersion: 3
-    m_VertexCount: 0
-    m_Channels:
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 3
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    m_DataSize: 0
-    _typelessdata: 
-  m_CompressedMesh:
-    m_Vertices:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UV:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Normals:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Tangents:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Weights:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_NormalSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_TangentSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_FloatColors:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_BoneIndices:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Triangles:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UVInfo: 0
-  m_LocalAABB:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
-  m_MeshUsageFlags: 0
-  m_CookingOptions: 30
-  m_BakedConvexCollisionMesh: 
-  m_BakedTriangleCollisionMesh: 
-  'm_MeshMetrics[0]': 1
-  'm_MeshMetrics[1]': 1
-  m_MeshOptimizationFlags: 1
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &1562008812
 GameObject:
   m_ObjectHideFlags: 0
@@ -7289,6 +7359,135 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1575998153}
   m_CullTransparentMesh: 1
+--- !u!1 &1603962105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1603962107}
+  - component: {fileID: 1603962106}
+  m_Layer: 0
+  m_Name: BG AudioSource
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!82 &1603962106
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603962105}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: e02844ac180ae384aaef0b3fba8de634, type: 3}
+  m_Resource: {fileID: 8300000, guid: e02844ac180ae384aaef0b3fba8de634, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.475
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!4 &1603962107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603962105}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 308.51788, y: 212.6402, z: -0.1037742}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1643775197
 GameObject:
   m_ObjectHideFlags: 0
@@ -7414,19 +7613,48 @@ MonoBehaviour:
   spotlightControl: {fileID: 845206521}
   fileCollection: {fileID: 1846805628}
   profileCollection: {fileID: 1654023835}
+  uiControl: {fileID: 1960114479}
+  presentEvidenceButton: {fileID: 1717478828}
+  presentProfileButton: {fileID: 464482890}
   testimonyEvents:
-  - characterName: 
-    dialogueText: 
+  - characterName: Person 1
+    dialogueText: Present the bullet here.
     voiceLine: {fileID: 0}
     typingSFX: {fileID: 0}
     activeChar: {fileID: 0}
     delay: 0
-    jumpIndex: 0
+    jumpIndex: -1
+    choices: []
+  - characterName: Person 1
+    dialogueText: Try presenting wrong things here.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 0}
+    delay: 0
+    jumpIndex: -1
     choices: []
   correctIndex: 0
-  requiredEvidence: 
-  logicPointsGain: 20
-  logicPointsPenalty: -10
+  requiredEvidence: Bullet
+  logicPointsGain: 30
+  logicPointsPenalty: -20
+  correctEvidenceDialogue:
+  - characterName: Person 1
+    dialogueText: That's correct.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 0}
+    delay: 0
+    jumpIndex: -2
+    choices: []
+  wrongEvidenceDialogue:
+  - characterName: Person 1
+    dialogueText: That's wrong.
+    voiceLine: {fileID: 0}
+    typingSFX: {fileID: 0}
+    activeChar: {fileID: 0}
+    delay: 0
+    jumpIndex: -2
+    choices: []
 --- !u!1 &1653759708
 GameObject:
   m_ObjectHideFlags: 0
@@ -7462,8 +7690,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0.0009765625, y: 52.646}
-  m_SizeDelta: {x: -1401.444, y: 61.113}
+  m_AnchoredPosition: {x: 0.0009765625, y: 8}
+  m_SizeDelta: {x: -1200.6885, y: 61.113}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1653759710
 MonoBehaviour:
@@ -7573,7 +7801,8 @@ MonoBehaviour:
     worldLocation: {fileID: 499679920}
   controls: {fileID: 1715470448}
   dialogManager: {fileID: 250132985}
-  crossExamManager: {fileID: 0}
+  crossExamManager: {fileID: 1645111904}
+  sequenceControl: {fileID: 623181075}
 --- !u!4 &1654023836
 Transform:
   m_ObjectHideFlags: 0
@@ -8577,7 +8806,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1814743897
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8848,7 +9077,8 @@ MonoBehaviour:
     worldLocation: {fileID: 1252444707}
   controls: {fileID: 1715470448}
   dialogManager: {fileID: 250132985}
-  crossExamManager: {fileID: 0}
+  crossExamManager: {fileID: 1645111904}
+  sequenceControl: {fileID: 623181075}
 --- !u!4 &1846805629
 Transform:
   m_ObjectHideFlags: 0
@@ -9585,8 +9815,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
-  m_fontSizeBase: 40
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -9827,7 +10057,7 @@ RectTransform:
   m_Father: {fileID: 481098460}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -9997,8 +10227,9 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1729321301}
+  - {fileID: 1603962107}
   - {fileID: 1788644980}
-  - {fileID: 1446703021}
   - {fileID: 1356267323}
   - {fileID: 135540606}
   - {fileID: 1962460580}
+  - {fileID: 1446703021}

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,13 +7,8 @@ using UnityEngine.UI;
 public class ItemData
 {
     public string itemName;
-    [TextArea(2, 5)]
-    public string description;
-
-    [Header("Dialogue Lines")]
+    [TextArea(2, 5)] public string description;
     public DialogManager.DialogueEvent[] dialogueEvents;
-
-    [Header("World Reference")]
     public Transform worldLocation;
 }
 
@@ -25,6 +20,7 @@ public class FileCollection : MonoBehaviour
     public Transform buttonContainer;
     public TMP_Text nameText;
     public TMP_Text descriptionText;
+
     [Header("Prefabs")]
     public GameObject itemButtonPrefab;
 
@@ -32,16 +28,16 @@ public class FileCollection : MonoBehaviour
     public List<ItemData> itemDatabase = new List<ItemData>();
 
     [Header("Systems")]
-    public Controls controls;          
+    public Controls controls;
     public DialogManager dialogManager;
     public CrossControl crossExamManager;
+    public SequenceControl sequenceControl;
 
     private Dictionary<string, ItemData> itemLookup = new Dictionary<string, ItemData>();
 
     void Start()
     {
         if (descriptionText != null) descriptionText.text = "";
-
         foreach (var data in itemDatabase)
         {
             if (!itemLookup.ContainsKey(data.itemName))
@@ -51,59 +47,47 @@ public class FileCollection : MonoBehaviour
 
     public bool CollectItem(string itemName)
     {
-        if (!itemLookup.ContainsKey(itemName))
-        {
-            Debug.LogWarning("Item not found in database: " + itemName);
-            return false;
-        }
-
-        if (collectedItems.Contains(itemName))
-        {
-            Debug.Log("Item already collected: " + itemName);
-            return false;
-        }
+        if (!itemLookup.ContainsKey(itemName)) return false;
+        if (collectedItems.Contains(itemName)) return false;
 
         ItemData item = itemLookup[itemName];
-
         collectedItems.Add(itemName);
         CreateButton(itemName);
         ShowDescription(itemName);
 
-        Debug.Log("Collected new item: " + itemName);
-
         if (controls != null && item.worldLocation != null)
-        {
             controls.FocusOnItem(item.worldLocation.position);
-        }
 
-        // --- Dialogue Trigger ---
         if (dialogManager != null && item.dialogueEvents.Length > 0)
-        {
             StartItemDialogue(item);
-        }
 
+        CheckCompletion();
         return true;
+    }
+
+    private void CheckCompletion()
+    {
+        if (collectedItems.Count >= itemDatabase.Count)
+        {
+            if (sequenceControl != null)
+                sequenceControl.EndInvestigation();
+        }
     }
 
     private void CreateButton(string itemName)
     {
         if (itemButtonPrefab == null || buttonContainer == null) return;
-
         GameObject newButton = Instantiate(itemButtonPrefab, buttonContainer);
         TMP_Text buttonText = newButton.GetComponentInChildren<TMP_Text>();
         Button btn = newButton.GetComponent<Button>();
 
-        if (buttonText != null)
-            buttonText.text = itemName;
-
-        if (btn != null)
-            btn.onClick.AddListener(() => ShowDescription(itemName));
+        if (buttonText != null) buttonText.text = itemName;
+        if (btn != null) btn.onClick.AddListener(() => ShowDescription(itemName));
     }
 
     private void ShowDescription(string itemName)
     {
         if (descriptionText == null) return;
-
         if (itemLookup.TryGetValue(itemName, out ItemData data))
         {
             nameText.text = data.itemName;
@@ -118,12 +102,9 @@ public class FileCollection : MonoBehaviour
 
     private void StartItemDialogue(ItemData item)
     {
-        if (item.dialogueEvents == null || item.dialogueEvents.Length == 0)
-            return;
-
+        if (item.dialogueEvents == null || item.dialogueEvents.Length == 0) return;
         dialogManager.events = item.dialogueEvents;
         dialogManager.StartDialogueAt(0);
-
         dialogManager.onDiagEnd += HandleDiagEnd;
     }
 
@@ -131,28 +112,16 @@ public class FileCollection : MonoBehaviour
     {
         if (nameText == null) return;
         string selectedItem = nameText.text;
-
         if (crossExamManager != null)
-        {
             crossExamManager.PresentEvidence(selectedItem);
-        }
-        else
-        {
-            Debug.LogWarning("[FileCollection] No CrossExaminationManager assigned.");
-        }
     }
-
 
     private void HandleDiagEnd()
     {
         if (controls != null)
-        {
             controls.ResetFocus();
-        }
-
         dialogManager.onDiagEnd -= HandleDiagEnd;
     }
-
 
     public IEnumerable<string> GetCollectedItems()
     {

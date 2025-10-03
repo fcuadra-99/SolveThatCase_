@@ -1,84 +1,196 @@
-using UnityEngine;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
-public enum GameEventType
+public enum GamePhase
 {
-    Investigation,
     Dialogue,
-    Trial
+    Investigation,
+    PostInvestigationDialogue,
+    Trial,
+    Complete
 }
 
 [System.Serializable]
-public class GameEvent
+public class PhaseConfig
 {
-    public string eventName;
-    public GameEventType eventType;
+    public string phaseName;
+    public GamePhase phaseType;
     public int dialogueStartIndex = 0;
+    public CrossControl crossExamManager;
+    public AudioClip backgroundMusic;
 }
 
 public class SequenceControl : MonoBehaviour
 {
-    [Header("Controls")]
-    public DialogManager dialog;
+    [Header("Systems")]
+    public DialogManager dialogManager;
+    public FileCollection fileCollection;
+    public CrossControl trialManager;
+    public AudioSource musicSource;
 
-    [Header("Event Sequence")]
-    public List<GameEvent> events = new List<GameEvent>();
+    [Header("Phase Sequence")]
+    public List<PhaseConfig> phases = new List<PhaseConfig>();
 
-    private int currentIndex = 0;
+    private int currentPhaseIndex = 0;
+    private Coroutine musicFadeRoutine;
+    private bool phaseActive = false;
+    private bool transitioning = false;
+    private CrossControl activeTrialManager = null;
 
     private void Start()
     {
-        if (events.Count > 0)
-            StartEvent(currentIndex);
+        if (fileCollection != null)
+            fileCollection.sequenceControl = this;
+
+        if (phases.Count > 0)
+            StartPhase(currentPhaseIndex);
     }
 
-    public void StartEvent(int index)
+    private void StartPhase(int index)
     {
-        if (index < 0 || index >= events.Count)
+        if (index < 0 || index >= phases.Count)
             return;
 
-        GameEvent gameEvent = events[index];
-        Debug.Log($"Starting Event: {gameEvent.eventName} | Type: {gameEvent.eventType}");
+        if (transitioning) return;
 
-        switch (gameEvent.eventType)
+        PhaseConfig phase = phases[index];
+        PlayMusic(phase.backgroundMusic);
+
+        phaseActive = true;
+
+        switch (phase.phaseType)
         {
-            case GameEventType.Investigation:
-                StartInvestigation(gameEvent);
+            case GamePhase.Dialogue:
+                StartDialogue(phase);
                 break;
-            case GameEventType.Dialogue:
-                StartDialogue(gameEvent);
+            case GamePhase.Investigation:
+                StartInvestigation(phase);
                 break;
-            case GameEventType.Trial:
-                StartTrial(gameEvent);
+            case GamePhase.PostInvestigationDialogue:
+                StartDialogue(phase);
+                break;
+            case GamePhase.Trial:
+                StartTrial(phase);
+                break;
+            case GamePhase.Complete:
+                phaseActive = false;
                 break;
         }
     }
 
-    private void StartInvestigation(GameEvent gameEvent)
+    private void StartDialogue(PhaseConfig phase)
     {
-        Debug.Log("Investigation started: " + gameEvent.eventName);
-        NextEvent();
+        dialogManager.onDiagEnd -= HandleDialogueEnd;
+        dialogManager.onDiagEnd += HandleDialogueEnd;
+        dialogManager.StartDialogueAt(phase.dialogueStartIndex);
     }
 
-    private void StartDialogue(GameEvent gameEvent)
+    private void HandleDialogueEnd()
     {
-        Debug.Log("Dialogue started: " + gameEvent.eventName);
-        dialog.StartDialogueAt(gameEvent.dialogueStartIndex);
-        NextEvent();
+        dialogManager.onDiagEnd -= HandleDialogueEnd;
+        EndCurrentPhase();
     }
 
-    private void StartTrial(GameEvent gameEvent)
+    private void StartInvestigation(PhaseConfig phase)
     {
-        Debug.Log("Trial started: " + gameEvent.eventName);
-        NextEvent();
+        if (fileCollection != null)
+            fileCollection.sequenceControl = this;
     }
 
-    public void NextEvent()
+    public void EndInvestigation()
     {
-        currentIndex++;
-        if (currentIndex < events.Count)
-            StartEvent(currentIndex);
+        if (!phaseActive) return;
+        PhaseConfig current = phases[currentPhaseIndex];
+        if (current.phaseType != GamePhase.Investigation) return;
+        EndCurrentPhase();
+    }
+
+    private void StartTrial(PhaseConfig phase)
+    {
+        CrossControl manager = phase.crossExamManager != null ? phase.crossExamManager : trialManager;
+        if (manager == null)
+        {
+            EndCurrentPhase();
+            return;
+        }
+
+        if (activeTrialManager != null)
+        {
+            activeTrialManager.OnCrossExaminationEnd -= HandleTrialEnd;
+            activeTrialManager = null;
+        }
+
+        activeTrialManager = manager;
+        activeTrialManager.OnCrossExaminationEnd -= HandleTrialEnd;
+        activeTrialManager.OnCrossExaminationEnd += HandleTrialEnd;
+        activeTrialManager.StartCrossExamination();
+    }
+
+    private void HandleTrialEnd()
+    {
+        if (activeTrialManager != null)
+        {
+            activeTrialManager.OnCrossExaminationEnd -= HandleTrialEnd;
+            activeTrialManager = null;
+        }
+        EndCurrentPhase();
+    }
+
+    private void EndCurrentPhase()
+    {
+        if (transitioning) return;
+        transitioning = true;
+        phaseActive = false;
+        StartCoroutine(AdvancePhaseOneFrame());
+    }
+
+    private IEnumerator AdvancePhaseOneFrame()
+    {
+        yield return null;
+        currentPhaseIndex++;
+        transitioning = false;
+        if (currentPhaseIndex < phases.Count)
+            StartPhase(currentPhaseIndex);
         else
-            Debug.Log("All events completed!");
+            Debug.Log("All phases finished.");
+    }
+
+    private void PlayMusic(AudioClip clip)
+    {
+        if (musicSource == null) return;
+        if (musicFadeRoutine != null)
+            StopCoroutine(musicFadeRoutine);
+        musicFadeRoutine = StartCoroutine(FadeMusic(clip));
+    }
+
+    private IEnumerator FadeMusic(AudioClip newClip)
+    {
+        if (musicSource.isPlaying)
+        {
+            float t = 1f;
+            while (t > 0f)
+            {
+                t -= Time.deltaTime;
+                musicSource.volume = Mathf.Max(0f, t);
+                yield return null;
+            }
+            musicSource.Stop();
+        }
+
+        if (newClip != null)
+        {
+            musicSource.clip = newClip;
+            musicSource.loop = true;
+            musicSource.Play();
+            float t = 0f;
+            while (t < 1f)
+            {
+                t += Time.deltaTime;
+                musicSource.volume = Mathf.Min(1f, t);
+                yield return null;
+            }
+            musicSource.volume = 1f;
+        }
     }
 }

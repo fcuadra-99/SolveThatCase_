@@ -53,4 +53,9 @@ public class UIControl : MonoBehaviour
     {
         logs.SetActive(!logs.activeSelf);
     }
+
+    public void disableFiles()
+    {
+        files.SetActive(false);
+    }
 }

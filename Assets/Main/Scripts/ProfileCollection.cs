@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +36,7 @@ public class ProfileCollection : MonoBehaviour
     public Controls controls;
     public DialogManager dialogManager;
     public CrossControl crossExamManager;
+    public SequenceControl sequenceControl;
 
     private Dictionary<string, CharacterData> characterLookup = new Dictionary<string, CharacterData>();
 
@@ -80,6 +81,18 @@ public class ProfileCollection : MonoBehaviour
         if (controls != null && character.worldLocation != null)
         {
             controls.FocusOnItem(character.worldLocation.position);
+        }
+
+        CheckCompletion();
+    }
+
+    private void CheckCompletion()
+    {
+        if (metCharacters.Count >= characterDatabase.Count)
+        {
+            Debug.Log("[ProfileCollection] All characters met. Moving to next phase.");
+            if (sequenceControl != null)
+                sequenceControl.EndInvestigation();
         }
     }
 
