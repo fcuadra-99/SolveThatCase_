@@ -8,9 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Main/Scenes/Menu.unity
     guid: 202453fd7ec0ccc43b2f500dfee34377
-  - enabled: 1
+  - enabled: 0
     path: Assets/Main/Scenes/Point&ClickScene.unity
     guid: 7b9e3b62ce91013479d103d40e15151c
+  - enabled: 1
+    path: Assets/Main/Scenes/SpotlightPhase.unity
+    guid: 7e47a84ede9775147bd559d7421bd6c6
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: ce1220470ac901140b400d4d57f54347, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 3c1a32ef7c5945d4884a03c07ad72a60, type: 2}

@@ -2,6 +2,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class DialogManager : MonoBehaviour
 {
@@ -24,7 +25,6 @@ public class DialogManager : MonoBehaviour
         public AudioSource voiceLine;
 
         public AudioClip typingSFX;
-
         public GameObject activeChar;
         public float delay = 0f;
         public int jumpIndex = -1;
@@ -55,6 +55,7 @@ public class DialogManager : MonoBehaviour
     public Logzzza dialogueLog;
     public SpotlightControl spotlightControl;
 
+    // Internal state
     private int currentEventIndex = 0;
     private bool isTyping = false;
     private Coroutine typingCoroutine = null;
@@ -65,12 +66,14 @@ public class DialogManager : MonoBehaviour
     private int lastShownIndex = -1;
     private bool endOnNext = false;
 
+    // Tracks which characters have been enabled during dialogue
+    private List<GameObject> trackedActiveChars = new List<GameObject>();
+
     void Start()
     {
         if (events == null || events.Length == 0)
         {
             Debug.LogWarning("[DialogManager] No events assigned.");
-            return;
         }
     }
 
@@ -85,6 +88,7 @@ public class DialogManager : MonoBehaviour
 
     public void StartDialogueAt(int startIndex)
     {
+        Debug.Log($"[DialogManager] Starting dialogue at index {startIndex}.");
         endOnNext = false;
         awaitingPlayerInput = false;
 
@@ -96,7 +100,7 @@ public class DialogManager : MonoBehaviour
 
         if (startIndex < 0 || startIndex >= events.Length)
         {
-            Debug.LogWarning("[DialogManager] Invalid start index: " + startIndex);
+            Debug.LogWarning($"[DialogManager] Invalid start index: {startIndex}");
             return;
         }
 
@@ -140,30 +144,36 @@ public class DialogManager : MonoBehaviour
         if (ev.delay > 0f)
             yield return new WaitForSeconds(ev.delay);
 
+        // Disable all active characters first
         foreach (var e in events)
         {
             if (e.activeChar != null)
                 e.activeChar.SetActive(false);
         }
-        if (ev.activeChar != null) ev.activeChar.SetActive(true);
 
-        if (ev.voiceLine != null) ev.voiceLine.Play();
+        // Activate the current one and track it
+        if (ev.activeChar != null)
+        {
+            ev.activeChar.SetActive(true);
+            if (!trackedActiveChars.Contains(ev.activeChar))
+                trackedActiveChars.Add(ev.activeChar);
+            Debug.Log($"[DialogManager] Activated character: {ev.activeChar.name}");
+        }
 
+        // Play voiceline
+        if (ev.voiceLine != null)
+            ev.voiceLine.Play();
+
+        // Set typing SFX
         if (typingAudioSource != null)
         {
-            if (ev.typingSFX != null)
-            {
-                typingAudioSource.clip = ev.typingSFX;
-            }
-            else
-            {
-                typingAudioSource.clip = defaultTypingSFX;
-            }
+            typingAudioSource.clip = ev.typingSFX ?? defaultTypingSFX;
         }
 
         diagBox.SetActive(true);
         diagChar.text = ev.characterName ?? "";
 
+        // Log dialogue
         if (dialogueLog != null)
             dialogueLog.LogDialogue(ev.characterName, ev.dialogueText);
 
@@ -174,12 +184,14 @@ public class DialogManager : MonoBehaviour
         awaitingPlayerInput = true;
         lastShownIndex = currentEventIndex;
 
+        // Show choices if any
         if (ev.choices != null && ev.choices.Length > 0)
         {
             ShowChoices(ev.choices);
             yield break;
         }
 
+        // End trigger
         if (ev.jumpIndex == -2)
         {
             endOnNext = true;
@@ -207,9 +219,7 @@ public class DialogManager : MonoBehaviour
                 diagText.text += c;
 
                 if (typingAudioSource != null && typingAudioSource.clip != null)
-                {
                     typingAudioSource.Play();
-                }
 
                 yield return new WaitForSeconds(scrollSpeed);
             }
@@ -293,13 +303,9 @@ public class DialogManager : MonoBehaviour
         }
 
         if (jumpIndex >= 0 && jumpIndex < events.Length)
-        {
             currentEventIndex = jumpIndex;
-        }
         else
-        {
             currentEventIndex++;
-        }
 
         DisplayNextDialogue();
     }
@@ -349,20 +355,55 @@ public class DialogManager : MonoBehaviour
 
     private void EndDialogue()
     {
-        Debug.Log("[DialogManager] Dialogue ended.");
+        Debug.Log("[DialogManager] EndDialogue called.");
+
         if (diagBox != null) diagBox.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         if (nextButton != null) nextButton.SetActive(false);
         if (diagText != null) diagText.text = "";
         if (diagChar != null) diagChar.text = "";
 
+        // Disable all tracked characters
+        for (int i = trackedActiveChars.Count - 1; i >= 0; i--)
+        {
+            var ch = trackedActiveChars[i];
+            if (ch != null && ch.activeSelf)
+            {
+                ch.SetActive(false);
+                Debug.Log($"[DialogManager] Disabled tracked character: {ch.name}");
+            }
+        }
+        trackedActiveChars.Clear();
+
+        // Fallback: disable all event characters too
+        foreach (var ev in events)
+        {
+            if (ev.activeChar != null && ev.activeChar.activeSelf)
+            {
+                ev.activeChar.SetActive(false);
+                Debug.Log($"[DialogManager] Disabled leftover event character: {ev.activeChar.name}");
+            }
+        }
+
+        // Stop typing coroutine if still running
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+            isTyping = false;
+        }
+
         awaitingPlayerInput = false;
         lastShownIndex = -1;
         endOnNext = false;
         running = false;
 
-        spotlightControl.MoveDoen();
+        if (spotlightControl != null)
+            spotlightControl.MoveDoen();
+        else
+            Debug.LogWarning("[DialogManager] spotlightControl is null in EndDialogue.");
 
+        Debug.Log("[DialogManager] Invoking onDiagEnd listeners.");
         onDiagEnd?.Invoke();
     }
 }
