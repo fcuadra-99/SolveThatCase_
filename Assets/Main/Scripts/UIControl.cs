@@ -45,7 +45,7 @@ public class UIControl : MonoBehaviour
         {
             TMP_Text label = clicked.GetComponentInChildren<TMP_Text>();
             if (label != null)
-                label.text = files.activeSelf ? "Close" : "Files";
+                label.text = files.activeSelf ? "Files" : "Files";
         }
     }
 

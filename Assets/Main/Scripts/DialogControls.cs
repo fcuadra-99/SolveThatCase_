@@ -399,7 +399,7 @@ public class DialogManager : MonoBehaviour
         running = false;
 
         if (spotlightControl != null)
-            spotlightControl.MoveDoen();
+            spotlightControl.MoveDown();
         else
             Debug.LogWarning("[DialogManager] spotlightControl is null in EndDialogue.");
 

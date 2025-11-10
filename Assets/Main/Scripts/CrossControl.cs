@@ -4,6 +4,20 @@ using System;
 
 public class CrossControl : MonoBehaviour
 {
+    [System.Serializable]
+    public class CrossExaminationPhase
+    {
+        public DialogManager.DialogueEvent[] testimonyEvents;
+        public int correctIndex;
+        public string requiredEvidence;
+
+        public float logicPointsGain = 20f;
+        public float logicPointsPenalty = -10f;
+
+        public DialogManager.DialogueEvent[] correctEvidenceDialogue;
+        public DialogManager.DialogueEvent[] wrongEvidenceDialogue;
+    }
+
     [Header("Dependencies")]
     public DialogManager dialogManager;
     public SpotlightControl spotlightControl;
@@ -15,19 +29,13 @@ public class CrossControl : MonoBehaviour
     public Button presentEvidenceButton;
     public Button presentProfileButton;
 
-    [Header("Cross Examination Settings")]
-    public DialogManager.DialogueEvent[] testimonyEvents;
-    public int correctIndex = 0;
-    public string requiredEvidence;
-    public float logicPointsGain = 20f;
-    public float logicPointsPenalty = -10f;
+    [Header("Cross Examination Phases")]
+    public CrossExaminationPhase[] phases;
 
-    [Header("Correct Evidence Settings")]
-    public DialogManager.DialogueEvent[] correctEvidenceDialogue;
+    [Header("Final Dialogue After All Phases")]
+    public DialogManager.DialogueEvent[] finalDialogue;
 
-    [Header("Wrong Evidence Settings")]
-    public DialogManager.DialogueEvent[] wrongEvidenceDialogue;
-
+    private int currentPhase = 0;
     private int currentIndex = 0;
     private bool testimonyActive = false;
 
@@ -43,23 +51,30 @@ public class CrossControl : MonoBehaviour
 
     public void StartCrossExamination()
     {
-        if (dialogManager == null || testimonyEvents.Length == 0)
+        if (dialogManager == null || phases.Length == 0)
         {
-            Debug.LogError("[CrossExamination] Missing setup!");
+            Debug.LogError("[CrossExamination] No phases set!");
             return;
         }
 
+        currentPhase = 0;
+        StartPhase(currentPhase);
+    }
+
+    private void StartPhase(int phaseIndex)
+    {
         testimonyActive = true;
         currentIndex = 0;
 
-        dialogManager.events = testimonyEvents;
+        var phase = phases[phaseIndex];
+
+        dialogManager.events = phase.testimonyEvents;
         dialogManager.StartDialogueAt(currentIndex);
+
         dialogManager.onDiagEnd += LoopDialogue;
 
-        if (presentEvidenceButton != null)
-            presentEvidenceButton.gameObject.SetActive(true);
-        if (presentProfileButton != null)
-            presentProfileButton.gameObject.SetActive(true);
+        presentEvidenceButton.gameObject.SetActive(true);
+        presentProfileButton.gameObject.SetActive(true);
     }
 
     private void LoopDialogue()
@@ -67,7 +82,7 @@ public class CrossControl : MonoBehaviour
         if (!testimonyActive) return;
 
         currentIndex++;
-        if (currentIndex >= testimonyEvents.Length)
+        if (currentIndex >= phases[currentPhase].testimonyEvents.Length)
             currentIndex = 0;
 
         dialogManager.StartDialogueAt(currentIndex);
@@ -77,83 +92,86 @@ public class CrossControl : MonoBehaviour
     {
         if (!testimonyActive) return;
 
-        if (currentIndex == correctIndex && evidenceName == requiredEvidence)
+        var phase = phases[currentPhase];
+
+        bool correct = (currentIndex == phase.correctIndex && evidenceName == phase.requiredEvidence);
+
+        if (correct)
         {
-            spotlightControl.AdjustMeter(logicPointsGain);
+            spotlightControl.AdjustMeter(phase.logicPointsGain);
             testimonyActive = false;
+
             dialogManager.onDiagEnd -= LoopDialogue;
 
-            if (presentEvidenceButton != null)
-                presentEvidenceButton.gameObject.SetActive(false);
-            if (presentProfileButton != null)
-                presentProfileButton.gameObject.SetActive(false);
+            presentEvidenceButton.gameObject.SetActive(false);
+            presentProfileButton.gameObject.SetActive(false);
 
             CloseUI();
 
-            if (correctEvidenceDialogue != null && correctEvidenceDialogue.Length > 0)
+            dialogManager.events = phase.correctEvidenceDialogue;
+            dialogManager.StartDialogueAt(0);
+
+            dialogManager.onDiagEnd += OnCorrectDialogueFinished;
+        }
+        else
+        {
+            spotlightControl.AdjustMeter(phase.logicPointsPenalty);
+
+            testimonyActive = false;
+            dialogManager.onDiagEnd -= LoopDialogue;
+
+            CloseUI();
+
+            dialogManager.events = phase.wrongEvidenceDialogue;
+            dialogManager.StartDialogueAt(0);
+
+            dialogManager.onDiagEnd += ResumePhaseAfterWrong;
+        }
+    }
+
+    private void ResumePhaseAfterWrong()
+    {
+        dialogManager.onDiagEnd -= ResumePhaseAfterWrong;
+
+        testimonyActive = true;
+        var phase = phases[currentPhase];
+
+        dialogManager.events = phase.testimonyEvents;
+        dialogManager.StartDialogueAt(currentIndex);
+
+        dialogManager.onDiagEnd += LoopDialogue;
+    }
+
+    private void OnCorrectDialogueFinished()
+    {
+        dialogManager.onDiagEnd -= OnCorrectDialogueFinished;
+
+        currentPhase++;
+
+        if (currentPhase >= phases.Length)
+        {
+            if (finalDialogue != null && finalDialogue.Length > 0)
             {
-                dialogManager.events = correctEvidenceDialogue;
+                dialogManager.events = finalDialogue;
                 dialogManager.StartDialogueAt(0);
             }
 
             OnCrossExaminationEnd?.Invoke();
+            return;
         }
-        else
-        {
-            spotlightControl.AdjustMeter(logicPointsPenalty);
-            dialogManager.onDiagEnd -= LoopDialogue;
-            testimonyActive = false;
 
-            CloseUI();
-
-            if (wrongEvidenceDialogue != null && wrongEvidenceDialogue.Length > 0)
-            {
-                dialogManager.events = wrongEvidenceDialogue;
-                dialogManager.StartDialogueAt(0);
-                dialogManager.onDiagEnd += ResumeTestimony;
-            }
-        }
-    }
-
-    private void ResumeTestimony()
-    {
-        dialogManager.onDiagEnd -= ResumeTestimony;
-
-        if (testimonyEvents != null && testimonyEvents.Length > 0)
-        {
-            testimonyActive = true;
-            dialogManager.events = testimonyEvents;
-            dialogManager.StartDialogueAt(currentIndex);
-            dialogManager.onDiagEnd += LoopDialogue;
-        }
+        StartPhase(currentPhase);
     }
 
     public void PresentEvidenceFromFiles()
     {
-        if (fileCollection != null)
-            fileCollection.PresentSelectedItem();
-
+        fileCollection?.PresentSelectedItem();
         CloseUI();
     }
 
     public void PresentProfileFromCollection()
     {
-        if (profileCollection != null)
-            profileCollection.PresentSelectedProfile();
-
-        CloseUI();
-    }
-
-    public void EndCrossExamination()
-    {
-        testimonyActive = false;
-        dialogManager.onDiagEnd -= LoopDialogue;
-
-        if (presentEvidenceButton != null)
-            presentEvidenceButton.gameObject.SetActive(false);
-        if (presentProfileButton != null)
-            presentProfileButton.gameObject.SetActive(false);
-
+        profileCollection?.PresentSelectedProfile();
         CloseUI();
     }
 

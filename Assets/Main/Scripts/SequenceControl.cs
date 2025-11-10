@@ -12,13 +12,32 @@ public enum GamePhase
 }
 
 [System.Serializable]
+public class SimpleDialogueLine
+{
+    public string characterName;
+    [TextArea(2, 5)] public string dialogueText;
+    public AudioClip voiceLine;
+}
+
+[System.Serializable]
 public class PhaseConfig
 {
     public string phaseName;
     public GamePhase phaseType;
+
+    [Header("For Dialogue Phases")]
     public int dialogueStartIndex = 0;
+
+    [Header("For Trial Phases")]
     public CrossControl crossExamManager;
+
+    [Header("Background Music")]
     public AudioClip backgroundMusic;
+
+    [Header("For Investigation Phases")]
+    public bool hasAfterInvestigationDialogue = false;
+    public List<SimpleDialogueLine> afterInvestigationDialogue = new List<SimpleDialogueLine>();
+    public AudioClip afterInvestigationMusic;
 }
 
 public class SequenceControl : MonoBehaviour
@@ -49,41 +68,40 @@ public class SequenceControl : MonoBehaviour
 
     private void StartPhase(int index)
     {
-        if (index < 0 || index >= phases.Count)
+        if (index < 0 || index >= phases.Count || transitioning)
             return;
-
-        if (transitioning) return;
 
         PhaseConfig phase = phases[index];
         PlayMusic(phase.backgroundMusic);
-
         phaseActive = true;
 
         switch (phase.phaseType)
         {
             case GamePhase.Dialogue:
-                StartDialogue(phase);
+            case GamePhase.PostInvestigationDialogue:
+                StartDialogue(phase.dialogueStartIndex);
                 break;
+
             case GamePhase.Investigation:
                 StartInvestigation(phase);
                 break;
-            case GamePhase.PostInvestigationDialogue:
-                StartDialogue(phase);
-                break;
+
             case GamePhase.Trial:
                 StartTrial(phase);
                 break;
+
             case GamePhase.Complete:
+                Debug.Log("All phases complete!");
                 phaseActive = false;
                 break;
         }
     }
 
-    private void StartDialogue(PhaseConfig phase)
+    private void StartDialogue(int startIndex)
     {
         dialogManager.onDiagEnd -= HandleDialogueEnd;
         dialogManager.onDiagEnd += HandleDialogueEnd;
-        dialogManager.StartDialogueAt(phase.dialogueStartIndex);
+        dialogManager.StartDialogueAt(startIndex);
     }
 
     private void HandleDialogueEnd()
@@ -96,6 +114,7 @@ public class SequenceControl : MonoBehaviour
     {
         if (fileCollection != null)
             fileCollection.sequenceControl = this;
+        Debug.Log($"Investigation phase started: {phase.phaseName}");
     }
 
     public void EndInvestigation()
@@ -103,6 +122,51 @@ public class SequenceControl : MonoBehaviour
         if (!phaseActive) return;
         PhaseConfig current = phases[currentPhaseIndex];
         if (current.phaseType != GamePhase.Investigation) return;
+
+        if (current.hasAfterInvestigationDialogue && current.afterInvestigationDialogue.Count > 0)
+        {
+            Debug.Log($"Starting after-investigation dialogue for {current.phaseName}");
+            StartCoroutine(StartAfterInvestigationDialogue(current));
+        }
+        else
+        {
+            EndCurrentPhase();
+        }
+    }
+
+    private IEnumerator StartAfterInvestigationDialogue(PhaseConfig phase)
+    {
+        phaseActive = false;
+        yield return new WaitForSeconds(0.2f);
+
+        PlayMusic(phase.afterInvestigationMusic);
+
+        // Create temporary dialogue events for DialogManager
+        var tempEvents = new List<DialogManager.DialogueEvent>();
+        foreach (var line in phase.afterInvestigationDialogue)
+        {
+            var ev = new DialogManager.DialogueEvent
+            {
+                characterName = line.characterName,
+                dialogueText = line.dialogueText,
+                voiceLine = null,
+                activeChar = null,
+                delay = 0f,
+                jumpIndex = -1,
+                choices = null
+            };
+            tempEvents.Add(ev);
+        }
+
+        dialogManager.events = tempEvents.ToArray();
+        dialogManager.onDiagEnd -= HandleAfterInvestigationEnd;
+        dialogManager.onDiagEnd += HandleAfterInvestigationEnd;
+        dialogManager.StartDialogueAt(0);
+    }
+
+    private void HandleAfterInvestigationEnd()
+    {
+        dialogManager.onDiagEnd -= HandleAfterInvestigationEnd;
         EndCurrentPhase();
     }
 
@@ -150,6 +214,7 @@ public class SequenceControl : MonoBehaviour
         yield return null;
         currentPhaseIndex++;
         transitioning = false;
+
         if (currentPhaseIndex < phases.Count)
             StartPhase(currentPhaseIndex);
         else
