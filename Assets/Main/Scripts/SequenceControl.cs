@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GamePhase
 {
@@ -45,6 +46,7 @@ public class SequenceControl : MonoBehaviour
     [Header("Systems")]
     public DialogManager dialogManager;
     public FileCollection fileCollection;
+    public GameObject caseComplete;
     public CrossControl trialManager;
     public AudioSource musicSource;
 
@@ -93,8 +95,14 @@ public class SequenceControl : MonoBehaviour
             case GamePhase.Complete:
                 Debug.Log("All phases complete!");
                 phaseActive = false;
+                caseComplete.SetActive(true);
                 break;
         }
+    }
+
+    public void btm()
+    {
+        SceneManager.LoadScene(0);
     }
 
     private void StartDialogue(int startIndex)

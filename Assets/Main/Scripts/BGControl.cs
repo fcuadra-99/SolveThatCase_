@@ -60,7 +60,7 @@ public class BGControl : MonoBehaviour
         yield return StartCoroutine(Fade(0f));
     }
 
-    private void ActivateScene(int index)
+    public void ActivateScene(int index)
     {
         // Disable current
         if (currentSceneIndex >= 0 && currentSceneIndex < scenes.Count)

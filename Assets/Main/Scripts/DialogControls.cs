@@ -57,6 +57,9 @@ public class DialogManager : MonoBehaviour
 
     // Internal state
     private int currentEventIndex = 0;
+    // Expose current event index so other controllers (like CrossControl)
+    // can reliably determine which dialogue event is currently active.
+    public int CurrentEventIndex { get { return currentEventIndex; } }
     private bool isTyping = false;
     private Coroutine typingCoroutine = null;
     private bool hasFinishedTyping = false;

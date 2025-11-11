@@ -24,10 +24,12 @@ public class CrossControl : MonoBehaviour
     public FileCollection fileCollection;
     public ProfileCollection profileCollection;
     public UIControl uiControl;
+    public BGControl bgctrl;
 
     [Header("UI")]
     public Button presentEvidenceButton;
     public Button presentProfileButton;
+    public GameObject caseCompletionPanel;
 
     [Header("Cross Examination Phases")]
     public CrossExaminationPhase[] phases;
@@ -43,6 +45,7 @@ public class CrossControl : MonoBehaviour
 
     void Start()
     {
+        bgctrl.ActivateScene(1);
         if (presentEvidenceButton != null)
             presentEvidenceButton.gameObject.SetActive(false);
         if (presentProfileButton != null)
@@ -94,7 +97,14 @@ public class CrossControl : MonoBehaviour
 
         var phase = phases[currentPhase];
 
-        bool correct = (currentIndex == phase.correctIndex && evidenceName == phase.requiredEvidence);
+        // Use the DialogManager's actual current event index. CrossControl's
+        // internal currentIndex can get out of sync with DialogManager when
+        // DialogManager advances (jumpIndex/choices/etc). Relying on the
+        // dialog manager's index ensures we check the evidence against the
+        // dialogue currently being shown to the player.
+        int dmIndex = dialogManager != null ? dialogManager.CurrentEventIndex : currentIndex;
+
+        bool correct = (dmIndex == phase.correctIndex && evidenceName == phase.requiredEvidence);
 
         if (correct)
         {
@@ -154,13 +164,30 @@ public class CrossControl : MonoBehaviour
             {
                 dialogManager.events = finalDialogue;
                 dialogManager.StartDialogueAt(0);
+                // Subscribe to activate completion panel after final dialogue ends
+                dialogManager.onDiagEnd += OnFinalDialogueFinished;
             }
-
-            OnCrossExaminationEnd?.Invoke();
+            else
+            {
+                // No final dialogue, activate completion panel immediately
+                if (caseCompletionPanel != null)
+                    caseCompletionPanel.SetActive(true);
+                OnCrossExaminationEnd?.Invoke();
+            }
             return;
         }
 
         StartPhase(currentPhase);
+    }
+
+    private void OnFinalDialogueFinished()
+    {
+        dialogManager.onDiagEnd -= OnFinalDialogueFinished;
+
+        if (caseCompletionPanel != null)
+            caseCompletionPanel.SetActive(true);
+
+        OnCrossExaminationEnd?.Invoke();
     }
 
     public void PresentEvidenceFromFiles()
